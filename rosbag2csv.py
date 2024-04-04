@@ -47,7 +47,12 @@ def _gen_msg_values(msg, prefix=""):
     for field, type in msg.get_fields_and_field_types().items():
         full_field_name = prefix + "." + field if prefix else field
         if "/" not in type:
-            yield full_field_name, getattr(msg, field)
+            if "[" in type:
+                len = int(type[type.index("[") + 1:-1])
+                for i in range(len):
+                    yield f"{full_field_name}[{i}]", getattr(msg, field)[i]
+            else:
+                yield full_field_name, getattr(msg, field)
         else:
             for key, val in _gen_msg_values(getattr(msg, field),
                                            prefix=full_field_name):
